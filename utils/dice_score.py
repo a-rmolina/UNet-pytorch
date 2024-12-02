@@ -2,10 +2,30 @@ import torch
 from torch import Tensor
 
 
+def calculate_segmentation_accuracy(predictions, labels):
+    """
+    Calculate pixel-wise accuracy for a segmentation model with multiple classes.
+
+    Args:
+        predictions (torch.Tensor): Model predictions (logits) of shape (batch_size, num_classes, height, width).
+        labels (torch.Tensor): Ground truth labels of shape (batch_size, height, width).
+        num_classes (int): Number of classes in the segmentation task.
+
+    Returns:
+        float: Overall accuracy as a percentage.
+    """
+    # Ensure predictions are probabilities or logits, apply argmax along class dimension
+    predicted_classes = torch.argmax(predictions, dim=1)  # Shape: (batch_size, height, width)
+    predicted_classes = predicted_classes.view(-1)  # Shape: (total_pixels)
+    labels = labels.view(-1)  # Shape: (total_pixels)
+    correct_predictions = (predicted_classes == labels)
+
+    # Calculate accuracy
+    return correct_predictions.sum().item() / correct_predictions.numel()
+
+
 def dice_coeff(input: Tensor, target: Tensor, reduce_batch_first: bool = False, epsilon: float = 1e-6):
     # Average of Dice coefficient for all batches, or for a single mask
-    assert input.size() == target.size()
-    assert input.dim() == 3 or not reduce_batch_first
 
     sum_dim = (-1, -2) if input.dim() == 2 or not reduce_batch_first else (-1, -2, -3)
 

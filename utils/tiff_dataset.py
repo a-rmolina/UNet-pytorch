@@ -19,10 +19,10 @@ def get_paths_from_csv(file_path):
 
 class TiffDataset(Dataset):
 
-    def __init__(self, raw_dir: Path, label_dir: Path, label_classes: Optional[np.ndarray] = None):
+    def __init__(self, input_dir: Path, label_classes: Optional[np.ndarray] = None):
         self.label_classes = label_classes
-        self.list_img = get_paths_from_csv(raw_dir)[:500]
-        self.list_label = get_paths_from_csv(label_dir)[:500]
+        self.list_img = get_paths_from_csv(input_dir / "images.csv")[:50]
+        self.list_label = get_paths_from_csv(input_dir / "labels.csv")[:50]
 
     def __len__(self):
         return len(self.list_img)
@@ -40,15 +40,15 @@ class TiffDataset(Dataset):
         }
 
     def label_to_classes(self, labeled_image):
-        output = np.zeros((1, labeled_image.shape[0], labeled_image.shape[1], self.label_classes.shape[0]))
+        output = np.zeros((labeled_image.shape[0], labeled_image.shape[1], self.label_classes.shape[0]))
 
         for c, label_class in enumerate(self.label_classes):
             label = np.nanmin(label_class == labeled_image, axis=2)
             output[:, :, c] = label
 
-        return output
+        return output.argmax(axis=2)
 
     @staticmethod
-    def preprocess_image(self, image: np.ndarray) -> np.ndarray:
+    def preprocess_image(image: np.ndarray) -> np.ndarray:
         return image.transpose(2, 0, 1) / 255.0
 
