@@ -1,5 +1,4 @@
 import torch
-import torchvision.transforms as transforms
 import numpy as np
 import csv
 
@@ -8,12 +7,20 @@ from skimage import io
 from pathlib import Path
 from typing import Optional, Tuple
 
+
+def fix_incorrect_path(path: str) -> Path:
+    if not Path(path).exists():
+        return Path(path.replace('/home/armolina/Qsync/images', '/media/admaro/Elements'))
+    else:
+        return Path(path)
+
+
 # Read the CSV and return a list of paths (ignoring the first row)
 def get_paths_from_csv(file_path):
     with open(file_path, 'r') as file:
         reader = csv.reader(file)
         next(reader)  # Skip the header row
-        paths = [Path(row[0]) for row in reader]
+        paths = [fix_incorrect_path(row[0]) for row in reader]
     return paths
 
 
@@ -21,8 +28,8 @@ class TiffDataset(Dataset):
 
     def __init__(self, input_dir: Path, label_classes: Optional[np.ndarray] = None):
         self.label_classes = label_classes
-        self.list_img = get_paths_from_csv(input_dir / "images.csv")[:50]
-        self.list_label = get_paths_from_csv(input_dir / "labels.csv")[:50]
+        self.list_img = get_paths_from_csv(input_dir / "images.csv")
+        self.list_label = get_paths_from_csv(input_dir / "labels.csv")
 
     def __len__(self):
         return len(self.list_img)

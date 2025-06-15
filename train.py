@@ -38,6 +38,7 @@ def load_json(json_path: Union[str, Path]) -> list:
 def train_model(
         train_dir,
         validation_dir,
+        labels_path,
         class_labels,
         model,
         device,
@@ -83,8 +84,6 @@ def train_model(
     grad_scaler = torch.cuda.amp.GradScaler(enabled=amp)
     criterion = nn.CrossEntropyLoss() if model.n_classes > 1 else nn.BCEWithLogitsLoss()
 
-    labels_path = Path(
-        "/home/armolina/aaMain/workspace/multispectral_segmentation/SegNet_PyTorch/Postdam/postdam_classes.json")
     experiment = ExperimentLogger()
     experiment.start_saving(Path("test_output"), labels_path)
 
@@ -101,7 +100,6 @@ def train_model(
                 images = images.to(device=device, dtype=torch.float32, memory_format=torch.channels_last)
                 true_masks = true_masks.to(device=device, dtype=torch.long)
 
-                # TODO: Change if checking the number of classes
                 with torch.autocast(device.type, enabled=amp):
                     masks_pred = model(images)
                     if model.n_classes == 1:
@@ -210,6 +208,7 @@ if __name__ == '__main__':
         train_model(
             train_dir=Path(args.train_dir),
             validation_dir=Path(args.validation_dir),
+            labels_path=Path(args.labels_class),
             class_labels=class_labels,
             model=model,
             epochs=args.epochs,
@@ -228,6 +227,7 @@ if __name__ == '__main__':
         train_model(
             train_dir=Path(args.train_dir),
             validation_dir=Path(args.validation_dir),
+            labels_path=Path(args.labels_class),
             class_labels=class_labels,
             model=model,
             epochs=args.epochs,

@@ -92,6 +92,7 @@ def save_logs(stop: mp.Event, queue: mp.Queue, output_folder: Path, labels_path:
                     if len(training_data) > 0:
                         save_training_data(training_logs_path, current_epoch, training_data)
                     current_epoch = new_data["TRAINING"]["epoch"]
+                    training_data = pd.DataFrame()
                 training_data = add_new_training_data(training_data, new_data["TRAINING"])
 
             elif "EVALUATION" in new_data:
